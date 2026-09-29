@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.DS_Store
+security-audit-report.md
+livecheck-report.md
+*.findings.json
+dist/*.zip
+dist/*.skill
+.env*
+!.env.example
