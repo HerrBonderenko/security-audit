@@ -1,0 +1,46 @@
+# Скопируй в .github/workflows/security.yml и подстрой команды под package.json.
+# Сканер берётся из репозитория скилла по зафиксированному тегу (не main) — так обновление
+# скилла не поменяет CI молча. Замени SKILL_REF на актуальный тег или SHA.
+name: security
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"   # раз в неделю: новые CVE появляются без изменений в коде
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      SKILL_REPO: HerrBonderenko/security-audit
+      SKILL_REF: v2.0.0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # полная история — чтобы сканер проверил секреты в прошлых коммитах
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint --if-present
+      - run: npx tsc --noEmit
+      - run: npm test --if-present
+      - name: npm audit (high и выше)
+        run: npm audit --audit-level=high --omit=dev
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: security-audit scanner
+        run: |
+          curl -sSfL "https://raw.githubusercontent.com/${SKILL_REPO}/${SKILL_REF}/skills/security-audit/scripts/audit.py" -o /tmp/audit.py
+          python /tmp/audit.py . --no-deps --fail-on critical --report security-audit-report.md
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-report
+          path: security-audit-report.md

@@ -1,0 +1,24 @@
+# Скопируй в .github/dependabot.yml.
+# ВАЖНО: включи Settings → Security → Code security → Dependency graph + Dependabot alerts,
+# иначе оповещения об уязвимостях могут не приходить.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+  # Для Python / JVM раскомментируй:
+  # - package-ecosystem: pip
+  #   directory: "/"
+  #   schedule: { interval: weekly }
+  # - package-ecosystem: gradle   # или maven
+  #   directory: "/"
+  #   schedule: { interval: weekly }
